@@ -1,22 +1,19 @@
 ﻿--[[
 	LootMaster
-
-			FMI:
-				http://www.wowwiki.com/ItemEquipLoc	Different item slots where item can be placed
-
-			Pass on loot == (GetOptOutOfLoot() == true)
-]]
+]]--
 
 LootMaster          = LibStub("AceAddon-3.0"):NewAddon("EPGPLootMaster", "AceConsole-3.0", "AceComm-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
 
-local version 	    = "0.4.9"
-local dVersion 	    = "2010-01-14T00:26:40Z"
+local version 	    = "0.6.08"
+local dVersion 	    = "2011-04-27T19:13:20Z"
 local iVersion	    = 3
 local iVersionML	  = 11
 local _G            = _G
 
 local debug         = false
 local addon         = LootMaster		-- Local instance of the addon
+
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGPLootmaster")
 
 --[[
     Returns a table serialized as a string.
@@ -56,19 +53,19 @@ function LootMaster:OnInitialize()
       profile = {
         buttonNum         = 4,
 
-        button1           = 'Mainspec',
+        button1           = L['Mainspec'],
         button1_color     = '55f00f',
         button1_fallback  = 'NEED',
 
-        button2           = 'Minor Upgrade',
+        button2           = L['Minor Upgrade'],
         button2_color     = '41831d',
         button2_fallback  = 'MINORUPGRADE',
 
-        button3           = 'Offspec',
+        button3           = L['Offspec'],
         button3_color     = 'ffc01b',
         button3_fallback  = 'OFFSPEC',
 
-        button4           = 'Greed',
+        button4           = L['Greed'],
         button4_color     = 'c65b00',
         button4_fallback  = 'GREED',
 
@@ -76,9 +73,9 @@ function LootMaster:OnInitialize()
         button6_color     = 'ffffff',
         button7_color     = 'ffffff',
 
-        button5           = 'Button 5',
-        button6           = 'Button 6',
-        button7           = 'Button 7',
+        button5           = L['Button 5'],
+        button6           = L['Button 6'],
+        button7           = L['Button 7'],
 
         hideResponses = false,
         auto_announce_threshold = 4,
@@ -86,9 +83,21 @@ function LootMaster:OnInitialize()
         hideOnSelection = true,
         loot_timeout = 60,
         filterEPGPLootmasterMessages = true,
-        monitor = false,
+
+		voting = true,
+		votingDisallowSelf = true,
+		votingSendGuildRank = false,
+		votingSendGuildRankList = {true,true},
+        votingSendAssistantOnly = true,
+
+		bidding = true,
+		biddingWhen = 'manually',
+
+        monitor = true,
         monitorSend = true,
-        monitorSendAssistantOnly = false,
+		monitorSendGuildRank = false,
+		monitorSendGuildRankList = {true,true},
+        monitorSendAssistantOnly = true,
         monitorThreshold = 2,
         ignoreResponseCorrections = false,
         hideMLOnCombat = true,
@@ -105,24 +114,24 @@ function LootMaster:OnInitialize()
 
     -- Client responses, DO NOT CHANGE ORDER!
     self.RESPONSE = {
-        { ["CODE"]      = "NOTANNOUNCED",   ["SORT"] =  100,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Not yet announced to candidate' },
-        { ["CODE"]      = "INIT",           ["SORT"] =  200,  ["COLOR"] = {1,0,0},        ["TEXT"] = 'Offline or lootmaster not installed?' },
-        { ["CODE"]      = "WAIT",           ["SORT"] =  300,  ["COLOR"] = {1,0.5,0},      ["TEXT"] = 'Making selection, please wait...' },
-        { ["CODE"]      = "TIMEOUT",        ["SORT"] =  400,  ["COLOR"] = {1,0,1},        ["TEXT"] = 'Candidate did not respond on time.' },
-        { ["CODE"]      = "NEED",           ["SORT"] =  500,  ["COLOR"] = {0.5,1,0.5},    ["TEXT"] = 'Mainspec' },
-        { ["CODE"]      = "GREED",          ["SORT"] =  800,  ["COLOR"] = {1,1,0},        ["TEXT"] = 'Greed / Alt' },
+        { ["CODE"]      = "NOTANNOUNCED",   ["SORT"] =  100,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Not yet announced to candidate'] },
+        { ["CODE"]      = "INIT",           ["SORT"] =  200,  ["COLOR"] = {1,0,0},        ["TEXT"] = L['Offline or lootmaster not installed?'] },
+        { ["CODE"]      = "WAIT",           ["SORT"] =  300,  ["COLOR"] = {1,0.5,0},      ["TEXT"] = L['Making selection, please wait...'] },
+        { ["CODE"]      = "TIMEOUT",        ["SORT"] =  400,  ["COLOR"] = {1,0,1},        ["TEXT"] = L['Candidate did not respond on time.'] },
+        { ["CODE"]      = "NEED",           ["SORT"] =  500,  ["COLOR"] = {0.5,1,0.5},    ["TEXT"] = L['Mainspec'] },
+        { ["CODE"]      = "GREED",          ["SORT"] =  800,  ["COLOR"] = {1,1,0},        ["TEXT"] = L['Greed / Alt'] },
         { ["CODE"]      = "DISENCHANT",     ["SORT"] =  900,  ["COLOR"] = {0,0.8,1},      ["TEXT"] = '--disenchanter--' },
-        { ["CODE"]      = "PASS",           ["SORT"] = 1000,  ["COLOR"] = {0.6,0.6,0.6},  ["TEXT"] = 'Pass' },
-        { ["CODE"]      = "AUTOPASS",       ["SORT"] = 1100,  ["COLOR"] = {0.6,0.6,0.6},  ["TEXT"] = 'Auto pass (not eligible)' },
-        { ["CODE"]      = "OFFSPEC",        ["SORT"] =  700,  ["COLOR"] = {1,1,0.5},      ["TEXT"] = 'Offspec' },
-        { ["CODE"]      = "MINORUPGRADE",   ["SORT"] =  600,  ["COLOR"] = {0.2,0.7,0.2},  ["TEXT"] = 'Minor Upgrade' },
-        { ["CODE"]      = "button1",        ["SORT"] =  401,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 1', ["CUSTOM"] = true },
-        { ["CODE"]      = "button2",        ["SORT"] =  402,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 2', ["CUSTOM"] = true },
-        { ["CODE"]      = "button3",        ["SORT"] =  403,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 3', ["CUSTOM"] = true },
-        { ["CODE"]      = "button4",        ["SORT"] =  404,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 4', ["CUSTOM"] = true },
-        { ["CODE"]      = "button5",        ["SORT"] =  405,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 5', ["CUSTOM"] = true },
-        { ["CODE"]      = "button6",        ["SORT"] =  406,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 6', ["CUSTOM"] = true },
-        { ["CODE"]      = "button7",        ["SORT"] =  407,  ["COLOR"] = {1,1,1},        ["TEXT"] = 'Button 7', ["CUSTOM"] = true }
+        { ["CODE"]      = "PASS",           ["SORT"] = 1000,  ["COLOR"] = {0.6,0.6,0.6},  ["TEXT"] = L['Pass'] },
+        { ["CODE"]      = "AUTOPASS",       ["SORT"] = 1100,  ["COLOR"] = {0.6,0.6,0.6},  ["TEXT"] = L['Auto pass (not eligible)'] },
+        { ["CODE"]      = "OFFSPEC",        ["SORT"] =  700,  ["COLOR"] = {1,1,0.5},      ["TEXT"] = L['Offspec'] },
+        { ["CODE"]      = "MINORUPGRADE",   ["SORT"] =  600,  ["COLOR"] = {0.2,0.7,0.2},  ["TEXT"] = L['Minor Upgrade'] },
+        { ["CODE"]      = "button1",        ["SORT"] =  401,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 1'], ["CUSTOM"] = true },
+        { ["CODE"]      = "button2",        ["SORT"] =  402,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 2'], ["CUSTOM"] = true },
+        { ["CODE"]      = "button3",        ["SORT"] =  403,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 3'], ["CUSTOM"] = true },
+        { ["CODE"]      = "button4",        ["SORT"] =  404,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 4'], ["CUSTOM"] = true },
+        { ["CODE"]      = "button5",        ["SORT"] =  405,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 5'], ["CUSTOM"] = true },
+        { ["CODE"]      = "button6",        ["SORT"] =  406,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 6'], ["CUSTOM"] = true },
+        { ["CODE"]      = "button7",        ["SORT"] =  407,  ["COLOR"] = {1,1,1},        ["TEXT"] = L['Button 7'], ["CUSTOM"] = true }
     }
     for i,d in ipairs(self.RESPONSE) do
         self.RESPONSE[d.CODE] = i;
@@ -132,10 +141,10 @@ function LootMaster:OnInitialize()
 
     -- Loot receive types.
     self.LOOTTYPE = {
-        { ["CODE"]      = "UNKNOWN",        ["TEXT"] = '%s received %s for unknown reason%4$s.' },
-        { ["CODE"]      = "GP",             ["TEXT"] = '%s received %s for %s GP%s.' },
-        { ["CODE"]      = "DISENCHANT",     ["TEXT"] = '%s received %s for disenchantment%4$s.' },
-        { ["CODE"]      = "BANK",           ["TEXT"] = '%s received %s for bank%4$s.' }
+        { ["CODE"]      = "UNKNOWN",        ["TEXT"] = L['%s received %s for unknown reason%4$s.'] },
+        { ["CODE"]      = "GP",             ["TEXT"] = L['%s received %s for %s GP%s.'] },
+        { ["CODE"]      = "DISENCHANT",     ["TEXT"] = L['%s received %s for disenchantment%4$s.'] },
+        { ["CODE"]      = "BANK",           ["TEXT"] = L['%s received %s for bank%4$s.'] }
     }
     for i,d in ipairs(self.LOOTTYPE) do
         self.LOOTTYPE[d.CODE] = i;
@@ -144,24 +153,34 @@ function LootMaster:OnInitialize()
     LootMaster.LOOTTYPE = self.LOOTTYPE;
 
     -- Register communications
-    self:RegisterComm("EPGPLootMasterC",    "CommandReceived")
+    self:RegisterComm("EPGPLootMasterC",	"CommandReceived")
 
       -- Register communications for version checking
-    self:RegisterComm("EPGPLMVChk", 	      "CommVersionCheckRequest")
-    self:RegisterComm("EPGPLMVRsp",	        "CommVersionCheckResponse")
-    self:RegisterComm("EPGPLMVHdlr",	      "CommVersionCheckHandler")
+    self:RegisterComm("EPGPLMVChk",			"CommVersionCheckRequest")
+    self:RegisterComm("EPGPLMVRsp",			"CommVersionCheckResponse")
+    self:RegisterComm("EPGPLMVHdlr",		"CommVersionCheckHandler")
 
       -- Check for updates versions in the guild
-    self:SendCommMessage("EPGPLMVChk",      iVersion .. "_" .. version, "GUILD")
+	if IsInGuild() then
+		self:SendCommMessage("EPGPLMVChk",      iVersion .. "_" .. version, "GUILD")
+	end
 
     self:RegisterEvent("PLAYER_REGEN_DISABLED", "EnterCombat");
     self:RegisterEvent("PLAYER_REGEN_ENABLED", "LeaveCombat");
 
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "EnterWorld");
+
     self:RegisterChatCommand("lm",	        "SlashHandler")
 
     self:RegisterChatCommand("rl", function() ReloadUI() end)
+end
 
-    self:Print(format('%s loaded.', version))
+function LootMaster:EnterWorld()
+	RegisterAddonMessagePrefix("EPGPLootMasterC")
+	RegisterAddonMessagePrefix("EPGPLMVChk")
+	RegisterAddonMessagePrefix("EPGPLMVRsp")
+	RegisterAddonMessagePrefix("EPGPLMVHdlr")
+	RegisterAddonMessagePrefix("EPGPLootMasterML")
 end
 
 function LootMaster:OnEnable()
@@ -244,7 +263,7 @@ function LootMaster:SlashHandler( input )
   elseif command=='raidinfo' or command=='ri' or command=='saved' or command=='lock' then
 
         if not LootMasterML then
-            self:Print('Please enable the lootmaster ML module.')
+            self:Print(L['Please enable the lootmaster ML module.'])
             return
         end
         LootMasterML:ShowRaidInfoLookup()
@@ -255,10 +274,10 @@ function LootMaster:SlashHandler( input )
         self.verbose = not self.verbose;
         if self.verbose then
             self.debug = true;
-            self:Print('Verbose debugging enabled')
+            self:Print(L['Verbose debugging enabled'])
         else
             self.debug = false;
-            self:Print('Verbose debugging disabled')
+            self:Print(L['Verbose debugging disabled'])
         end
 
     elseif command=='reset' then
@@ -275,7 +294,7 @@ function LootMaster:SlashHandler( input )
     elseif command=='close' or command=='hide' then
 
         if LootMasterML then
-            self:Print('Hiding lootmaster window, reopen with /lm show')
+            self:Print(L['Hiding lootmaster window, reopen with /lm show'])
             LootMasterML.Hide(LootMasterML)
         end
 
@@ -299,19 +318,19 @@ function LootMaster:SlashHandler( input )
 
         local player, item = strmatch(strtrim(args or ''), '(%S+)%s+(.+)');
         if not player or not item or player=='' or item=='' then
-            self:Print('Usage: /lm emulate player [itemlink]')
-            self:Print('This will emulate the "Player receives [item]." locally. Usually used to "fix" the portal problem in naxx.')
+            self:Print(L['Usage: /lm emulate player [itemlink]'])
+            self:Print(L['This will emulate the "Player receives [item]." locally. Usually used to "fix" the portal problem in naxx.'])
         else
             EmulateLocal_CHAT_MSG_LOOT( player, item )
         end
 
     elseif command=='add' or command=='announce' then
 
-        if not LootMasterML then return self:Print('Could not add loot, ML module not active') end
+        if not LootMasterML then return self:Print(L['Could not add loot, master looter module not active']) end
         ml = LootMasterML;
 
         local lootLink = strtrim(args or '');
-        if not args or not lootLink or lootLink=='' then return self:Print(format('Usage: /lm %s [lootlink]', command)) end;
+        if not args or not lootLink or lootLink=='' then return self:Print(format(L['Usage: /lm %s [lootlink]'], command)) end;
 
         local loot = ml.GetLoot(ml, lootLink);
         local added = false
@@ -322,7 +341,7 @@ function LootMaster:SlashHandler( input )
             loot.manual = true;
             added = true;
         end
-        if not loot then return self:Print('Unable to register loot.') end;
+        if not loot then return self:Print(L['Unable to register loot.']) end;
 
         local num = GetNumRaidMembers()
         local name = nil;
@@ -389,19 +408,37 @@ function LootMaster:SlashHandler( input )
 
 		-- Debugging features
         local ml = LootMasterML;
-        if not ml then return self:Print("LootMaster ML not enabled") end;
+        if not ml then return self:Print(L["Master Looter Module not enabled"]) end;
 
         local itemName, item, _, _, _, _, _, _, _, _ = GetItemInfo("item:868:0:0:0:0:0:0:0")
         if item then
             local itemID = ml.AddLoot( ml, item, true, 1 )
             ml.lootTable[itemID].announced = false;
             ml.AddCandidate( ml, itemID, UnitName('player') )
-            if UnitName('party1') then ml.AddCandidate( ml, itemID, UnitName('party1') ) end
+			if UnitName('party1') then ml.AddCandidate( ml, itemID, UnitName('party1') ) end
             if UnitName('party2') then ml.AddCandidate( ml, itemID, UnitName('party2') ) end
             if UnitName('party3') then ml.AddCandidate( ml, itemID, UnitName('party3') ) end
             if UnitName('party4') then ml.AddCandidate( ml, itemID, UnitName('party4') ) end
-            --ml.AddCandidate( ml, itemID, 'Kerstin' )
-            --ml.AddCandidate( ml, itemID, 'Deadbolt' )
+			ml.SetCandidateResponse(ml, itemID, UnitName('player'), self.RESPONSE.NEED)
+			--for i = 1, 25 do
+			--	ml.AddCandidate( ml, itemID, 'Unit' .. i )
+			--end
+
+			--[[local num = GetNumGuildMembers(false)
+            local count = 0
+            for i=1, num do
+                if count>14 then break end
+                local name, _, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
+				local ep, gp, alt, minEP = LootMasterML:GetEPGP(name)
+                if not online and ep>0 then
+					count = count + 1
+                    ml.AddCandidate( ml, itemID, name )
+					ml.SetCandidateResponse(ml, itemID, name, self.RESPONSE.NEED)
+					--ml.SetCandidateData(ml, itemID, name, 'bid', ceil(math.random()*15)*10)
+					--ml.SetCandidateData(ml, itemID, name, 'votes', floor(math.random()*2))
+                end
+            end]]
+
             ml.SendCandidateListToMonitors(ml, itemID)
             ml.ReloadMLTableForLoot(ml, item )
         end
@@ -436,18 +473,7 @@ function LootMaster:SlashHandler( input )
 
 	else
 
-		self:Print( format('%s loaded.', version) )
-        self:Print( 'This mod provides a full loot distributing system for EPGP.' )
-        self:Print( 'USAGE: Create a party/raid, setup a master looter. When master loot drops, just rightclick the item and the UI will open.' )
-        self:Print( 'Commandline Tools:' )
-        self:Print( '/lm version: Show the versionchecker' )
-        self:Print( '/lm config: Show the options window' )
-        self:Print( '/lm reset: Resets window locations and scale' )
-        self:Print( '/lm hide: Manually hide the Master Looter UI' )
-        self:Print( '/lm show: Manually show the Master Looter UI' )
-        self:Print( '/lm toggle: Manually toggle between showing and hiding the Master Looter UI' )
-        self:Print( '/lm add [itemlink]: Manually add an item to the Master Looter UI' )
-        self:Print( '/lm announce [itemlink]: Manually add an item and announce it to your group.' )
+		self:Print( format('%s loaded.', version) .. L.usage )
 
 	end
 end
@@ -607,7 +633,8 @@ local autopassTable = {
     ['Wands']               = {'DEATHKNIGHT','WARRIOR','PALADIN','HUNTER','DRUID','ROGUE','SHAMAN'},
     ['Staves']              = {'DEATHKNIGHT','ROGUE','PALADIN'},
     ['Two-Handed Axes']     = {'WARLOCK','ROGUE','MAGE','DRUID','PRIEST'},
-    ['Sigils']              = {'PALADIN','WARRIOR','ROGUE','MAGE','PRIEST','WARLOCK','DRUID','HUNTER','SHAMAN'}
+    ['Sigils']              = {'PALADIN','WARRIOR','ROGUE','MAGE','PRIEST','WARLOCK','DRUID','HUNTER','SHAMAN'},
+	['Relics']              = {}
 }
 -- Make the lookup table for localized subTypes.
 local subTypeLocalized = {}
@@ -660,7 +687,7 @@ function LootMaster:GetItemAutoPassClasses(item)
 
               -- Give an error when we're unable to unlocalize the classname.
               if not class then
-                  self:Print(format('Unable to unlocalize %s', localizedClass))
+                  self:Print(format(L['Unable to unlocalize %s'], localizedClass))
                   return nil;
               end
 
@@ -718,7 +745,7 @@ function LootMaster:EncodeUnlocalizedClasses( classFilenameArray )
     if not classFilenameArray then return 0 end;
     local bits = 0
     for class, _ in pairs(classFilenameArray) do
-        if not classBitTable[class] then self:Print(format('Serious error in class bitencoder, class %s not found. Please make sure you have the latest version installed and report if problem persists.', class or 'nil')); return 0 end;
+        if not classBitTable[class] then self:Print(format(L['Serious error in class bitencoder, class %s not found. Please make sure you have the latest version installed and report if problem persists.'], class or 'nil')); return 0 end;
         bits = bit_bor(bits, classBitTable[class])
     end
     return bits;
@@ -741,7 +768,7 @@ function LootMaster:DecodeUnlocalizedClasses( encodedClassArray )
     end
 
     if encodedClassArray~=0 then
-        self:Print(format('Serious error in class bitdecoder, bits %s not found. Please make sure you have the latest version installed and report if problem persists.', tostring(encodedClassArray)));
+        self:Print(format(L['Serious error in class bitdecoder, bits %s not found. Please make sure you have the latest version installed and report if problem persists.'], tostring(encodedClassArray)));
         return nil;
     end;
 
@@ -767,11 +794,13 @@ local subTypeLocalizedLookup = {
     ['Staves']              = 'Hitem:25760',    -- Battle Mage's Baton
     ['Two-Handed Axes']     = 'Hitem:32663',    -- Apexis Cleaver
 
-    ['Totems']              = 'Hitem:31031',    -- Stormfury Totem
+    ['Totems']              = 'Hitem:50458',    -- Bizuri's Totem of Shattered Ice
     ['Shields']             = 'Hitem:31491',    -- Netherwing Defender's Shield
     ['Librams']             = 'Hitem:31033',    -- Libram of Righteous Power
     ['Idols']               = 'Hitem:38366',    -- Idol of Pure Thoughts
     ['Sigils']              = 'Hitem:40875',    -- Sigil of Arthritic Binding
+
+	['Relics']              = 'Hitem:40875',    -- Sigil of Arthritic Binding
 
     ['Mail']                = 'Hitem:31214',    -- Abyssal Mail Greaves
     ['Leather']             = 'Hitem:31215',    -- Abyssal Leather Treads
@@ -779,22 +808,30 @@ local subTypeLocalizedLookup = {
 }
 local localizeLootTypesCount = 0
 local hasEnglishLocale = (GetLocale() == 'enUS')
+
 function LootMaster:LocalizeLootTypes()
+
+	if not self.bindingtooltip then
+		self.bindingtooltip = CreateFrame("GameTooltip", "LootMasterBindingTooltip", UIParent, "GameTooltipTemplate")
+	end
+	local tip = self.bindingtooltip
+	tip:SetOwner(UIParent, "ANCHOR_NONE")
+
     localizeLootTypesCount = localizeLootTypesCount + 1
     local failed = false;
     for sType, item in pairs(subTypeLocalizedLookup) do
         local itemName, _, _, _, _, _, itemSubType, _, _, _ = GetItemInfo(item)
         if itemName and itemSubType then
             -- Sanitycheck when we have an enUS client. Check our output against the strings we already know.
-            if hasEnglishLocale and itemSubType~=sType then
-                self:Print(format('Failed looking up localized strings for itemSubTypes. Expected %s for %s, got %s. Please report!', tostring(sType), tostring(item), tostring(itemSubType)))
-            else
+            --if hasEnglishLocale and itemSubType~=sType then
+            --    self:Print(format('Failed looking up localized strings for itemSubTypes. Expected %s for %s, got %s. Please report!', tostring(sType), tostring(item), tostring(itemSubType)))
+            -- else
                 subTypeLocalized[itemSubType] = sType;
-            end
+            --end
             localizeLootTypesCount = 0;
             subTypeLocalizedLookup[sType] = nil;
         else
-            GameTooltip:SetHyperlink(item)
+            tip:SetHyperlink(item)
             failed = true;
             -- stop the loop and try again after 2 secs
             break;

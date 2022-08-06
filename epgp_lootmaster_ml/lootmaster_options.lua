@@ -1,5 +1,7 @@
 ﻿local mod = LootMaster:NewModule("EPGPLootmaster_Options")
 
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGPLootmaster")
+
 --local LootMasterML = false
 
 function mod:OnEnable()
@@ -9,43 +11,43 @@ function mod:OnEnable()
     get = function(i) return LootMaster.db.profile[i[#i]] end,
     set = function(i, v) LootMaster.db.profile[i[#i]] = v end,
     args = {
-        
+
         global = {
             order = 1,
             type = "group",
             hidden = function(info) return not LootMasterML end,
-            name = "General config",
-            
+            name = L["General config"],
+
                 args = {
-                
+
                 help = {
                     order = 0,
                     type = "description",
-                    name = "EPGP is an in game, relational loot distribution system. LootMaster helps you distribute loot to your raid and registers this loot in the EPGP system.",
+                    name = L["EPGP is an in game, relational loot distribution system. LootMaster helps you distribute loot to your raid and registers this loot in the EPGP system."],
                 },
-                
-                
-                
+
+
+
                 no_ml = {
                     order = 2,
                     type = "description",
                     hidden = function(info) return LootMasterML end,
-                    name = "\r\n\r\n|cFFFF8080WARNING: Alot of settings have been hidden because the EPGPLootmaster 'ML' module has been disabled. Please enabled it from the addon configuration screen.|r",
+                    name = L["\r\n\r\n|cFFFF8080WARNING: Alot of settings have been hidden because the EPGPLootmaster 'ML' module has been disabled. Please enabled it from the addon configuration screen.|r"],
                 },
-                
+
                 config_group = {
                     order = 12,
                     type = "group",
                     guiInline = true,
                     hidden = function(info) return not LootMasterML end,
-                    name = "General config",
+                    name = L["General config"],
                     args = {
-                        
+
                         use_epgplootmaster = {
                             order = 2,
                             type = "select",
 			                width = "double",
-                            set = function(i, v) 
+                            set = function(i, v)
                                 LootMaster.db.profile.use_epgplootmaster = v;
                                 if v == 'enabled' then
                                     LootMasterML:EnableTracking();
@@ -54,26 +56,26 @@ function mod:OnEnable()
                                 else
                                     LootMasterML.current_ml = nil;
                                     LootMasterML:GROUP_UPDATE();
-                                end                               
-                                
+                                end
+
                             end,
-                            name = "Use EPGPLootmaster",
-                            desc = "Controls wether EPGPLootmaster is enabled or not.",
+                            name = L["Use EPGPLootmaster"],
+                            desc = L["Controls whether EPGPLootmaster is enabled or not."],
                             values = {
-                                ['enabled'] = 'Always use EPGPLootmaster to distribute loot, without asking',
-                                ['disabled'] = 'Never use EPGPLootmaster to distribute loot',
-                                ['ask'] = 'Ask me every time I become loot master'
+                                ['enabled'] = L['Always use EPGPLootmaster to distribute loot, without asking'],
+                                ['disabled'] = L['Never use EPGPLootmaster to distribute loot'],
+                                ['ask'] = L['Ask me every time I become loot master']
                             },
                         },
-                        
+
                         loot_timeout = {
                             order = 14,
                             type = "select",
 			                width = "double",
-                            name = "Loot selection timeout",
-                            desc = "Sets the amount of time a loot candidate has to select wether they want the loot or not.",
+                            name = L["Loot selection timeout"],
+                            desc = L["Sets the amount of time a loot candidate has to select wether they want the loot or not."],
                             values = {
-                                [0] = 'No timeout',
+                                [0] = L['No timeout'],
                                 [10] = '10 secs',
                                 [15] = '15 secs',
                                 [20] = '20 secs',
@@ -85,168 +87,70 @@ function mod:OnEnable()
                                 [150] = '2 min 30 sec',
                                 [300] = '5 min',
                             },
-                        }, 
-                        
-                        --[[defaultMainspecGP = {
-                            order = 15.1,
-                            type = "input",                    
-                            name = "Default mainspec GP",
-                            desc = "Fill this field to override the GP value for mainspec loot.",
-                            width = 'normal',
-                            validate = function(data, value) if value=='' then return true end; if not strmatch(value, '^%s*%d+%s-%%?%s*$') then return false else return true end end,
-                            set = function(i, v) 
-                                
-                                if v == '' or not v then
-                                    v = ''
-                                    LootMaster.db.profile.defaultMainspecGPPercentage = false;
-                                    LootMaster.db.profile.defaultMainspecGPValue = nil;
-                                else
-                                    value, perc = strmatch(v, '^%s*(%d+)%s-(%%?)%s*$')
-                                    LootMaster.db.profile.defaultMainspecGPPercentage = (perc~=nil and perc~='');
-                                    LootMaster.db.profile.defaultMainspecGPValue = tonumber(value);
-                                end                               
-                                LootMaster.db.profile.defaultMainspecGP = v;
-                            end,
-                            usage = "\r\nEmpty: use normal GP value"..
-                                    "\r\n50%: use 50% of normal GP value"..
-                                    "\r\n25: all items are worth 25 GP"
                         },
-                        
-                        defaultMinorUpgradeGP = {
-                            order = 15.2,
-                            type = "input",                    
-                            name = "Default minor upgrade GP",
-                            desc = "Fill this field to override the GP value for minor upgrade mainspec loot.",
-                            width = 'normal',
-                            validate = function(data, value) if value=='' then return true end; if not strmatch(value, '^%s*%d+%s-%%?%s*$') then return false else return true end end,
-                            set = function(i, v) 
-                                
-                                if v == '' or not v then
-                                    v = ''
-                                    LootMaster.db.profile.defaultMinorUpgradeGPPercentage = false;
-                                    LootMaster.db.profile.defaultMinorUpgradeGPValue = nil;
-                                else
-                                    value, perc = strmatch(v, '^%s*(%d+)%s-(%%?)%s*$')
-                                    LootMaster.db.profile.defaultMinorUpgradeGPPercentage = (perc~=nil and perc~='');
-                                    LootMaster.db.profile.defaultMinorUpgradeGPValue = tonumber(value);
-                                end                               
-                                LootMaster.db.profile.defaultMinorUpgradeGP = v;
-                            end,
-                            usage = "\r\nEmpty: use normal GP value"..
-                                    "\r\n50%: use 50% of normal GP value"..
-                                    "\r\n25: all items are worth 25 GP"
-                        },
-                        
-                        defaultOffspecGP = {
-                            order = 15.3,
-                            type = "input",                    
-                            name = "Default offspec GP",
-                            desc = "Fill this field to override the GP value for offspec loot.",
-                            width = 'normal',
-                            validate = function(data, value) if value=='' then return true end; if not strmatch(value, '^%s*%d+%s-%%?%s*$') then return false else return true end end,
-                            set = function(i, v) 
-                                
-                                if v == '' or not v then
-                                    v = ''
-                                    LootMaster.db.profile.defaultOffspecGPPercentage = false;
-                                    LootMaster.db.profile.defaultOffspecGPValue = nil;
-                                else
-                                    value, perc = strmatch(v, '^%s*(%d+)%s-(%%?)%s*$')
-                                    LootMaster.db.profile.defaultOffspecGPPercentage = (perc~=nil and perc~='');
-                                    LootMaster.db.profile.defaultOffspecGPValue = tonumber(value);
-                                end                               
-                                LootMaster.db.profile.defaultOffspecGP = v;
-                            end,
-                            usage = "\r\nEmpty: use normal GP value"..
-                                    "\r\n50%: use 50% of normal GP value"..
-                                    "\r\n25: all items are worth 25 GP"
-                        },
-                        
-                        defaultGreedGP = {
-                            order = 15.4,
-                            type = "input",                    
-                            name = "Default greed GP",
-                            desc = "Fill this field to override the GP value for greed loot.",
-                            width = 'normal',
-                            validate = function(data, value) if value=='' then return true end; if not strmatch(value, '^%s*%d+%s-%%?%s*$') then return false else return true end end,
-                            set = function(i, v) 
-                                
-                                if v == '' or not v then
-                                    v = ''
-                                    LootMaster.db.profile.defaultGreedGPPercentage = false;
-                                    LootMaster.db.profile.defaultGreedGPValue = nil;
-                                else
-                                    value, perc = strmatch(v, '^%s*(%d+)%s-(%%?)%s*$')
-                                    LootMaster.db.profile.defaultGreedGPPercentage = (perc~=nil and perc~='');
-                                    LootMaster.db.profile.defaultGreedGPValue = tonumber(value);
-                                end                               
-                                LootMaster.db.profile.defaultGreedGP = v;
-                            end,
-                            usage = "\r\nEmpty: use normal GP value"..
-                                    "\r\n50%: use 50% of normal GP value"..
-                                    "\r\n25: all items are worth 25 GP"
-                        },]]
-                        
+
+
+
                         ignoreResponseCorrections = {
                             type = "toggle",
                             order = 17,
                             width = 'full',
-                            name = "Only accept first candidate response for each item.",
-                            desc = "Normally candidates can send multiple whispers per loot to change their selection. For example they first selected need but then decided to change to greed and give more priority to someone else. If you enable this option only the first response will be counted.",
+                            name = L["Only accept first candidate response for each item."],
+                            desc = L["Normally candidates can send multiple whispers per loot to change their selection. For example they first selected need but then decided to change to greed and give more priority to someone else. If you enable this option only the first response will be counted."],
                         },
-                        
+
                         allowCandidateNotes = {
                             type = "toggle",
                             order = 18,
                             width = 'full',
-                            name = "Allow candidates to add notes to each item.",
-                            desc = "Check this if you want your candidates to send notes to you. The notes will show up as an icon on your loot interface. You can read them by hovering the icon. This allows your candidates to send you messages such as: 'Only needed if noone else needs' or 'Item B has higher priority'. You can disable this if you feel this slows the loot distribution down.",
+                            name = L["Allow candidates to add notes to each item."],
+                            desc = L["Check this if you want your candidates to send notes to you. The notes will show up as an icon on your loot interface. You can read them by hovering the icon. This allows your candidates to send you messages such as: 'Only needed if noone else needs' or 'Item B has higher priority'. You can disable this if you feel this slows the loot distribution down."],
                         },
-                        
+
                         filterEPGPLootmasterMessages = {
                             type = "toggle",
                             order = 19,
                             width = 'full',
-                            name = "Filter chat announces and whispers.",
-                            desc = "EPGPLootmaster has a nice system where even raid members who don't have EPGPLootmaster installed can need/greed/pass on items. This will be done by whispering and sending chat messages to the raid channel. Enable this option to filter all these messages from your chat.",
+                            name = L["Filter chat announces and whispers."],
+                            desc = L["EPGPLootmaster has a nice system where even raid members who don't have EPGPLootmaster installed can need/greed/pass on items. This will be done by whispering and sending chat messages to the raid channel. Enable this option to filter all these messages from your chat."],
                         },
-                        
+
                         audioWarningOnSelection = {
                             type = "toggle",
                             order = 20,
                             width = 'full',
-                            name = "Play audio warning on loot selection popup.",
-                            desc = "This will play an audible warning when the loot selection popup is opened and requires your input.",
+                            name = L["Play audio warning on loot selection popup."],
+                            desc = L["This will play an audible warning when the loot selection popup is opened and requires your input."],
                         },
                     }
                 },
-                
+
                 buttons_group = {
                     order = 12.5,
                     type = "group",
                     guiInline = true,
                     hidden = function(info) return not LootMasterML end,
-                    name = "Selection buttons",
+                    name = L["Selection buttons"],
                     args = {
-                        
+
                         help = {
                             order = 0,
                             type = "description",
-                            name = "This allows you to configure the selection buttons on the user interfaces of your raiders. Please note that client selections will be sorted the same as the buttons are sorted below. You will need to add one button minimal and the pass button will always be visible.",
+                            name = L["This allows you to configure the selection buttons on the user interfaces of your raiders. Please note that client selections will be sorted the same as the buttons are sorted below. You will need to add one button minimal and the pass button will always be visible."],
                         },
-                        
+
                         buttonNum = {
                             type = "range",
                             width = 'full',
                             order = 1,
-                            name = "Amount of buttons to display:",
+                            name = L["Amount of buttons to display:"],
                             min = 1,
                             max = EPGPLM_MAX_BUTTONS,
                             step = 1,
-                            desc = "Specify how many buttons you want to show on your clients. You will need to configure 1 button minimal and be aware that the pass button will always be included.",
+                            desc = L["Specify how many buttons you want to show on your clients. You will need to configure 1 button minimal and be aware that the pass button will always be included."],
                         },
-                        
-                        
+
+
                         button1 = {
                             type = "input",
                             width = 'full',
@@ -254,9 +158,9 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.1,
                             name = "button1",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         button2 = {
                             type = "input",
                             width = 'full',
@@ -264,9 +168,9 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.2,
                             name = "button2",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         button3 = {
                             type = "input",
                             width = 'full',
@@ -274,9 +178,9 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.3,
                             name = "button3",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         button4 = {
                             type = "input",
                             width = 'full',
@@ -284,9 +188,9 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.4,
                             name = "button4",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         button5 = {
                             type = "input",
                             width = 'full',
@@ -294,9 +198,9 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.5,
                             name = "button5",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         button6 = {
                             type = "input",
                             width = 'full',
@@ -304,9 +208,9 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.6,
                             name = "button6",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         button7 = {
                             type = "input",
                             width = 'full',
@@ -314,15 +218,15 @@ function mod:OnEnable()
                             dialogControl = "EPGPLMButtonConfigWidget",
                             order = 1.7,
                             name = "button7",
-                            desc = "Configure this selection button.",
+                            desc = L["Configure this selection button."],
                         },
-                        
+
                         btnTestPopup = {
                             order = 3,
                             type = "execute",
                             width = 'full',
-                            name = "Open test popup and monitor windows",
-                            desc = "Opens up a testing popup and monitor window, so you can see what this will look like on your clients. After you're done testing just click the discard loot button to close the monitor window.",
+                            name = L["Open test popup and monitor windows"],
+                            desc = L["Opens up a testing popup and monitor window, so you can see what this will look like on your clients. After you're done testing just click the discard loot button to close the monitor window."],
                             func = function()
                                 local lootLink
                                 for i=1, 20 do
@@ -330,8 +234,8 @@ function mod:OnEnable()
                                   if lootLink then break end
                                 end
                                 if not lootLink then return end
-                                
-                                ml = LootMasterML        
+
+                                ml = LootMasterML
                                 local loot = ml:GetLoot(lootLink)
                                 local added = false
                                 if not loot then
@@ -341,7 +245,7 @@ function mod:OnEnable()
                                     loot.manual = true
                                     added = true
                                 end
-                                if not loot then return self:Print('Unable to register loot.') end          
+                                if not loot then return self:Print(L['Unable to register loot.']) end
                                 ml:AddCandidate(loot.id, UnitName('player'))
                                 ml:AnnounceLoot(loot.id)
                                 for i=1, LootMaster.db.profile.buttonNum do
@@ -353,70 +257,70 @@ function mod:OnEnable()
                         },
                     },
                 },
-                
+
                 auto_hiding_group = {
                     order = 13,
                     type = "group",
                     guiInline = true,
                     hidden = function(info) return not LootMasterML end,
-                    name = "Auto hiding",
+                    name = L["Auto hiding"],
                     args = {
-                        
+
                         help = {
                             order = 0,
                             type = "description",
-                            name = "This allows you to control the automatic hiding features of EPGPLootmaster.",
+                            name = L["This allows you to control the automatic hiding features of EPGPLootmaster."],
                         },
-                                
+
                         hideOnSelection = {
                             type = "toggle",
                             order = 16,
                             width = 'full',
-                            name = "Hide monitor window when loot selection opens.",
-                            desc = "Check this to auto hide the Master Looter/Monitor Interface when you are required to select need/greed/pass on loot.",
+                            name = L["Hide monitor window when loot selection opens."],
+                            desc = L["Check this to auto hide the Master Looter/Monitor Interface when you are required to select need/greed/pass on loot."],
                         },
-                        
+
                         hideMLOnCombat = {
                             type = "toggle",
                             order = 17,
                             width = 'full',
-                            name = "Hide monitor window when entering combat.",
-                            desc = "Check this to auto hide the Master Looter/Monitor Interface when you are entering combat, it will restore automatically when you leave combat.",
+                            name = L["Hide monitor window when entering combat."],
+                            desc = L["Check this to auto hide the Master Looter/Monitor Interface when you are entering combat, it will restore automatically when you leave combat."],
                         },
-                        
+
                         hideSelectionOnCombat = {
                             type = "toggle",
                             order = 18,
                             width = 'full',
-                            name = "Hide loot selection window when entering combat.",
-                            desc = "Check this to auto hide the Loot need/greed/pass selection interface when you are entering combat, it will restore automatically when you leave combat.",
+                            name = L["Hide loot selection window when entering combat."],
+                            desc = L["Check this to auto hide the Loot need/greed/pass selection interface when you are entering combat, it will restore automatically when you leave combat."],
                         },
                     },
                 },
-                
+
                 auto_announce_group = {
                     order = 14,
                     type = "group",
                     guiInline = true,
                     hidden = function(info) return not LootMasterML end,
-                    name = "Auto announcement",
+                    name = L["Auto announcement"],
                     args = {
-                        
+
                         help = {
                             order = 0,
                             type = "description",
-                            name = "The EPGP Lootmaster auto announcer allows you to auto announce specific loot to the raid.",
+                            name = L["The EPGP Lootmaster auto announcer allows you to auto announce specific loot to the raid."],
                         },
-                                
+
                         auto_announce_threshold = {
                             order = 13,
                             type = "select",
                             width = 'full',
                             hidden = function(info) return not LootMasterML end,
-                            name = "Auto announcement threshold",
-                            desc = "Sets automatic loot announcement threshold, any loot that is of equal or higher quality will get auto announced to the raid members.",
+                            name = L["Auto announcement threshold"],
+                            desc = L["Sets automatic loot announcement threshold, any loot that is of equal or higher quality will get auto announced to the raid members."],
                             values = {
-                                [0] = 'Never auto announce',
+                                [0] = L['Never auto announce'],
                                 [2] = ITEM_QUALITY2_DESC,
                                 [3] = ITEM_QUALITY3_DESC,
                                 [4] = ITEM_QUALITY4_DESC,
@@ -425,31 +329,30 @@ function mod:OnEnable()
                         },
                     },
                 },
-                
-                
+
+
                 AutoLootGroup = {
-            
+
                             type = "group",
                             order = 16,
                             guiInline = true,
-                            name = "Auto looting",
-                            desc = "Auto looting of items",
+                            name = L["Auto looting"],
+                            desc = L["Auto looting of items"],
                             hidden = function(info) return not LootMasterML end,
                             args = {
-                                
+
                                 help = {
                                     order = 0,
                                     type = "description",
-                                    name = "The EPGP Lootmaster auto looter allows you to send specific BoU and BoE items to a predefined candidate without asking questions.",
+                                    name = L["The EPGP Lootmaster auto looter allows you to send specific BoU and BoE items to a predefined candidate without asking questions."],
                                 },
-                                
                                 AutoLootThreshold = {
                                     order = 1,
                                     type = "select",
                                     width = 'full',
                                     hidden = function(info) return not LootMasterML end,
-                                    name = "Auto loot threshold (BoE and BoU items only)",
-                                    desc = "Sets automatic looting threshold, any BoE and BoU loot that is of lower or equal quality will get auto sent to the candidate below.",
+                                    name = L["Auto loot threshold (BoE and BoU items only)"],
+                                    desc = L["Sets automatic looting threshold, any BoE and BoU loot that is of lower or equal quality will get auto sent to the candidate below."],
                                     values = {
                                         [0] = 'Never auto loot',
                                         [2] = ITEM_QUALITY2_DESC,
@@ -458,14 +361,13 @@ function mod:OnEnable()
                                         [5] = ITEM_QUALITY5_DESC,
                                     },
                                 },
-                                
                                 AutoLooter = {
                                     type = "select",
                                     style = 'dropdown',
                                     order = 2,
                                     width = 'full',
-                                    name = "Name of the default candidate (case sensitive):",
-                                    desc = "Please enter the name of the default candidate to receive the BoE and BoU items here.",
+                                    name = L["Name of the default candidate (case sensitive):"],
+                                    desc = L["Please enter the name of the default candidate to receive the BoE and BoU items here."],
                                     disabled = function(info) return (LootMaster.db.profile.AutoLootThreshold or 0)==0 end,
                                     values = function()
                                         local names = {}
@@ -473,7 +375,7 @@ function mod:OnEnable()
                                         local num = GetNumRaidMembers()
                                         if num>0 then
                                             -- we're in raid
-                                            for i=1, num do 
+                                            for i=1, num do
                                                 name = GetRaidRosterInfo(i)
                                                 names[name] = name
                                             end
@@ -481,7 +383,7 @@ function mod:OnEnable()
                                             num = GetNumPartyMembers()
                                             if num>0 then
                                                 -- we're in party
-                                                for i=1, num do 
+                                                for i=1, num do
                                                     names[UnitName('party'..i)] = UnitName('party'..i)
                                                 end
                                                 names[UnitName('player')] = UnitName('player')
@@ -491,8 +393,8 @@ function mod:OnEnable()
                                                 for i=1, num do repeat
                                                     name = GetGuildRosterInfo(i)
                                                     names[name] = name
-                                                until true end     
-                                            end                                   
+                                                until true end
+                                        end
                                         end
                                         sort(names)
                                         return names;
@@ -500,24 +402,132 @@ function mod:OnEnable()
                                 },
                             }
                 },
-            
-        
-        
+
+				VotingGroup = {
+                            type = "group",
+                            order = 16.2,
+                            guiInline = true,
+                            hidden = function(info) return not LootMasterML end,
+							disabled = function(info) return not LootMaster.db.profile.monitorSend end,
+                            name = L["Voting system"],
+                            args = {
+
+								help = {
+									order = 0,
+									type = "description",
+									name = L["The voting system allows the master looter to request help when making a decision. While this is not something that's encouraged by the EPGP system as it will slow down the looting process a little, it will provide a guild much more flexibility. The master looter can request a vote per item at any time by a simple press of a button."],
+								},
+								voting = {
+                                    type = "toggle",
+                                    order = 1,
+                                    width = 'full',
+                                    name = L["Enable the voting system"],
+                                },
+								votingDisallowSelf = {
+                                    hidden = function(info) return not LootMaster.db.profile.voting end,
+								    type = "toggle",
+                                    order = 2,
+                                    width = 'full',
+                                    name = L["Disallow voting for self"],
+                                    desc = L["This will disallow players from voting on themselves"],
+                                },
+								votingSendAssistantOnly = {
+                                    hidden = function(info) return not LootMaster.db.profile.voting end,
+								    type = "toggle",
+                                    order = 2,
+                                    width = 'full',
+                                    name = L["Only send to promoted players in raid"],
+                                    desc = L["This will cause some overhead, since monitor messages will be sent one-by-one to players. Leave this disabled if you want everybody to be able to see the monitor. Disabling this option also makes the monitors respond faster."],
+                                },
+								votingSendGuildRank = {
+									hidden = function(info) return not LootMaster.db.profile.voting end,
+                                    type = "toggle",
+                                    order = 3,
+                                    width = 'full',
+                                    name = L["Only send to specific guildranks"],
+                                    desc = L["This will cause some overhead, since monitor messages will be sent one-by-one to players. Leave this disabled if you want everybody to be able to see the monitor. Disabling this option also makes the monitors respond faster."],
+                                },
+								votingSendGuildRankList = {
+									hidden = function(info)
+										if not LootMaster.db.profile.voting then return true end
+										return not LootMaster.db.profile.votingSendGuildRank
+									end,
+									type = "multiselect",
+									order = 4,
+									name = L["Only send to the following guildranks:"],
+									values = function()
+										local data = {}
+										if not IsInGuild() then return data end
+										for i=1, GuildControlGetNumRanks() do
+											data[i] = GuildControlGetRankName(i)
+										end
+										return data
+									end,
+									get = function(i,rankNum)
+										if type(LootMaster.db.profile[ i[#i] ])~='table' then return true end
+										return LootMaster.db.profile[ i[#i] ][rankNum]
+									end,
+									set = function(i,rankNum, value)
+										if type(LootMaster.db.profile[ i[#i] ])~='table' then
+											LootMaster.db.profile[ i[#i] ]={}
+										end
+										LootMaster.db.profile[ i[#i] ][rankNum] = value
+									end
+								}
+							}
+				},
+
+				BiddingGroup = {
+                            type = "group",
+                            order = 16.3,
+                            guiInline = true,
+                            hidden = function(info) return not LootMasterML end,
+                            name = L["Bidding system"],
+                            args = {
+
+								help = {
+									order = 0,
+									type = "description",
+									name = L["The bidding system is a variation of the EPGP system where loot candidates are allowed to bid a custom GP value per item. The highest GP bid wins the loot."],
+								},
+								bidding = {
+                                    type = "toggle",
+                                    order = 1,
+                                    width = 'full',
+                                    name = L["Enable the bidding system"],
+                                },
+								biddingWhen = {
+                                    order = 2,
+                                    type = "select",
+                                    width = 'full',
+                                    hidden = function(info) return not LootMaster.db.profile.bidding end,
+                                    name = L["When should bidding be available to player?"],
+									desc = L["Always: the bidding inputs will always be available when using the auto announcing features.\r\n\r\nManual: Disable the bidding system by default and allow me to select per item (you should disable auto announce). Bidding system will be disabled when you're using the auto announcing system. You can by-pass the auto announcing system per item by alt+clicking an item on the native loot window."],
+                                    values = {
+                                        ['always'] = L["Always enable bidding"],
+                                        ['manually'] = L["Manual, disable bidding when auto announcing"]
+                                    },
+                                }
+							}
+				},
+
+
+
                 MonitorGroup = {
                             type = "group",
                             order = 17,
                             guiInline = true,
                             hidden = function(info) return not LootMasterML end,
-                            name = "Monitoring",
-                            desc = "Send and receive monitor messages from the master looter and see what other raidmembers selected.",
+                            name = L["Monitoring"],
+                            desc = L["Send and receive monitor messages from the master looter and see what other raidmembers selected."],
                             args = {
-                                
+
                                 help = {
                                     order = 0,
                                     type = "description",
-                                    name = "The EPGP Lootmaster Monitor allows you to send messages to other users in your raid. It will show them the same interface as the ML, allowing them to help with the loot distribution.",
+                                    name = L["The EPGP Lootmaster Monitor allows you to send messages to other users in your raid. It will show them the same interface as the ML, allowing them to help with the loot distribution."],
                                 },
-                
+
                                 monitor = {
                                     type = "toggle",
                                     set = function(i, v)
@@ -528,17 +538,17 @@ function mod:OnEnable()
                                     end,
                                     order = 1,
                                     width = 'full',
-                                    name = "Listen for incoming monitor updates",
-                                    desc = "Check if you want display incoming monitor updates. This function allows you to see the masterlooter interface so you can help in making decisions about the loot distribution.",
+                                    name = L["Listen for incoming monitor updates"],
+                                    desc = L["Check if you want display incoming monitor updates. This function allows you to see the masterlooter interface so you can help in making decisions about the loot distribution."],
                                     disabled = false,
                                 },
-                                
+
                                 monitorIncomingThreshold = {
                                     order = 2,
                                     width = 'normal',
                                     type = "select",
-                                    name = "Only receive for equal or higher than",
-                                    desc = "Only listen for monitor messages from the raid for items that match this threshold or are higher. (Please keep in mind that patterns etc also match this threshold)",
+                                    name = L["Only receive for equal or higher than"],
+                                    desc = L["Only listen for monitor messages from the raid for items that match this threshold or are higher. (Please keep in mind that patterns etc also match this threshold)"],
                                     disabled = function(info) return not LootMaster.db.profile.monitor end,
                                     values = {
                                         [2] = ITEM_QUALITY2_DESC,
@@ -547,40 +557,73 @@ function mod:OnEnable()
                                         [5] = ITEM_QUALITY5_DESC,
                                     },
                                 },
-                                
+
                                 monitorSend = {
                                     type = "toggle",
                                     order = 3.1,
                                     width = 'full',
-                                    name = "Send outgoing monitor updates",
-                                    desc = "Check if you want send outgoing monitor messages. This functions allows other raidmembers to see the masterlooter interface so they can help in making decisions about the loot distribution. You will only send out messages if you are the master looter.",
+                                    name = L["Send outgoing monitor updates"],
+                                    desc = L["Check if you want send outgoing monitor messages. This functions allows other raidmembers to see the masterlooter interface so they can help in making decisions about the loot distribution. You will only send out messages if you are the master looter."],
                                     disabled = false,
                                 },
-                                
+
+								monitorSendGuildRank = {
+                                    type = "toggle",
+                                    order = 3.20,
+                                    width = 'full',
+                                    name = L["Only send to specific guildranks"],
+                                    desc = L["This will cause some overhead, since monitor messages will be sent one-by-one to players. Leave this disabled if you want everybody to be able to see the monitor. Disabling this option also makes the monitors respond faster."],
+                                },
+
+								monitorSendGuildRankList = {
+									hidden = function(info) return not LootMaster.db.profile.monitorSendGuildRank end,
+									type = "multiselect",
+									order = 3.21,
+									name = L["Only send to the following guildranks:"],
+									values = function()
+										local data = {}
+										if not IsInGuild() then return data end
+										for i=1, GuildControlGetNumRanks() do
+											data[i] = GuildControlGetRankName(i)
+										end
+										return data
+									end,
+									get = function(i,rankNum)
+										if type(LootMaster.db.profile[i[#i]])~='table' then return true end
+										return LootMaster.db.profile[i[#i]][rankNum]
+									end,
+									set = function(i,rankNum, value)
+										if type(LootMaster.db.profile[i[#i]])~='table' then
+											LootMaster.db.profile[i[#i]]={}
+										end
+										LootMaster.db.profile[i[#i]][rankNum] = value
+									end
+								},
+
                                 monitorSendAssistantOnly = {
                                     type = "toggle",
-                                    order = 3.2,
+                                    order = 3.12,
                                     disabled = function(info) return not LootMaster.db.profile.monitorSend end,
                                     width = 'full',
-                                    name = "Only send to promoted players",
-                                    desc = "This will cause some overhead, since monitor messages will be sent one-by-one to assistants and raidleader. Leave this disabled if you want everybody to be able to see the monitor. Disabling this option also makes the monitors respond faster.",
+                                    name = L["Only send to promoted players in raid"],
+                                    desc = L["This will cause some overhead, since monitor messages will be sent one-by-one to players. Leave this disabled if you want everybody to be able to see the monitor. Disabling this option also makes the monitors respond faster."],
                                 },
-                                
+
                                 hideResponses = {
                                     type = "toggle",
                                     disabled = function(info) return not LootMaster.db.profile.monitorSend end,
-                                    order = 3.3,
+                                    order = 3.4,
                                     width = 'full',
-                                    name = "Mask monitors while selecting",
-                                    desc = "This is a raid-wide configuration. This will hide the responses from players on monitors while the monitoring player is still making his selection for a specific item. This will prevent players from making selections based on other peoples responses. This prevents 'cheating' and speeds up the selection process because people will stop waiting for eachother",
+                                    name = L["Mask monitors while selecting"],
+                                    desc = L["This is a raid-wide configuration. This will hide the responses from players on monitors while the monitoring player is still making his selection for a specific item. This will prevent players from making selections based on other peoples responses. This prevents 'cheating' and speeds up the selection process because people will stop waiting for eachother"],
                                 },
-                                
+
                                 monitorThreshold = {
                                     order = 4,
                                     width = 'normal',
                                     type = "select",
-                                    name = "Only send for equal or higher than",
-                                    desc = "Only send monitor messages to the raid for items that match this threshold or are higher. (Please keep in mind that patterns etc also match this threshold)",
+                                    name = L["Only send for equal or higher than"],
+                                    desc = L["Only send monitor messages to the raid for items that match this threshold or are higher. (Please keep in mind that patterns etc also match this threshold)"],
                                     disabled = function(info) return not LootMaster.db.profile.monitorSend end,
                                     values = {
                                         [2] = ITEM_QUALITY2_DESC,
@@ -589,54 +632,54 @@ function mod:OnEnable()
                                         [5] = ITEM_QUALITY5_DESC,
                                     },
                                 },
-                                
+
                                 hint = {
                                     order = 5,
                                     width = 'normal',
                                     hidden = function(info) return not LootMaster.db.profile.monitorSend end,
                                     type = "description",
-                                    name = "  Only BoE and BoU items will be\r\n  filtered. BoP items will always\r\n  send a monitor message.",
+                                    name = L["Only BoE and BoU items will be filtered. BoP items will always send a monitor message."],
                                 },
                             }
                 },
-                
+
                 ExtraFunctionGroup = {
                             type = "group",
                             order = 18,
                             guiInline = true,
                             hidden = function(info) return not LootMasterML end,
-                            name = "Extra functions",
+                            name = L["Extra functions"],
                             args = {
-                                
+
                                 help = {
                                     order = 0,
                                     type = "description",
-                                    name = "Some extra functions that might come in handy.",
+                                    name = L["Some extra functions that might come in handy."],
                                 },
                                 btnVersionCheck = {
                                   order = 1000,
                                   type = "execute",
-                                  name = "Version Checker",
-                                  desc = "Opens up the version checker frame.",
+                                  name = L["Version Checker"],
+                                  desc = L["Opens up the version checker frame."],
                                   func = function()
                                            LootMaster:ShowVersionCheckFrame()
                                          end
                                 },
-                                
+
                                 btnRaidInfoCheck = {
                                   order = 2000,
                                   type = "execute",
-                                  name = "Raidinfo Check",
-                                  desc = "Checks whether players are locked to an instance.",
+                                  name = L["Raidinfo Check"],
+                                  desc = L["Checks whether players are locked to an instance."],
                                   func = function()
                                            LootMasterML:ShowRaidInfoLookup()
                                          end
                                 }
-                                
-                                
-                                
-                
-                                
+
+
+
+
+
                             }
                 }
             },
@@ -650,5 +693,5 @@ function mod:OnEnable()
   config:RegisterOptionsTable("EPGPLootMaster-Bliz", options)
   dialog:AddToBlizOptions("EPGPLootMaster-Bliz", "EPGPLootMaster", nil, 'global')
   --dialog:AddToBlizOptions("EPGPLootMaster-Bliz", "Monitor", "EPGPLootMaster", 'MonitorGroup')
-  
+
 end

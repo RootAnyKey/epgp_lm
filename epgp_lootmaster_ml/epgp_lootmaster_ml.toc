@@ -1,14 +1,14 @@
-## Interface: 30300
+## Interface: 40100
 ## Title: EPGP LootMaster - |cFFFF8080ML|r
 ## Author: Bushmaster-Twisting Nether-EU
-## Version: 0.4.9
+## Version: 0.6.08
 ## Notes: Full loot distributing system for EPGP - Master Looter Stuff - Players can disable this safely.
 ## X-Category: Guild
 ## RequiredDeps: epgp_lootmaster
-## OptionalDeps: EPGP, CT_RaidTracker,CT RaidTracker 1.5 (modded by Eris)
+## OptionalDeps: EPGP, HeadCount, HeadCount2, CT_RaidTracker, MizusRaidTracker
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## X-Curse-Packaged-Version: 0.4.9
+## X-Curse-Packaged-Version: 0.6.08
 ## X-Curse-Project-Name: EPGPLootmaster
 ## X-Curse-Project-ID: epgp_lootmaster
 ## X-Curse-Repository-ID: wow/epgp_lootmaster/mainline
